@@ -2,11 +2,11 @@
  * Custom graphic block
  */
 //% weight=100 color=#0fbc11 icon="\uf067" block="MaqueenPlusV2.0andV2.1"
-//% groups="['V3']"
+//% groups="['V2.1']"
 namespace maqueenPlusV2 {
 
     //Motor selection enumeration
-    export enum MyEnumMotor {
+    export enum WhichMotor {
         //% block="left motor"
         LeftMotor,
         //% block="right motor"
@@ -16,7 +16,7 @@ namespace maqueenPlusV2 {
     };
 
     //Motor direction enumeration selection
-    export enum MyEnumDir {
+    export enum MotorDirection {
         //% block="forward"
         Forward,
         //% block="backward"
@@ -24,7 +24,7 @@ namespace maqueenPlusV2 {
     };
 
     //LED light selection enumeration
-    export enum MyEnumLed {
+    export enum WhichLed {
         //% block="left led light"
         LeftLed,
         //% block="right led light"
@@ -34,7 +34,7 @@ namespace maqueenPlusV2 {
     };
 
     //LED light switch enumeration selection
-    export enum MyEnumSwitch {
+    export enum SwitchPosition {
         //% block="off"
         Close,
         //% block="on"
@@ -42,7 +42,7 @@ namespace maqueenPlusV2 {
     };
 
     //Line sensor selection
-    export enum MyEnumLineSensor {
+    export enum WhichLineSensor {
         //% block="left rear"
         SensorL2 = 0,
         //% block="left"
@@ -148,7 +148,7 @@ namespace maqueenPlusV2 {
             Version_v = pins.i2cReadNumber(I2CADDR, NumberFormat.Int8LE);
         }
         // The 2.1 version has the addresses reversed. DFRobot will not fix it.
-        if (readVersion().includes("2.1")) {
+        if (readVersion().includes("2.0")) {
             ADC_REGISTERS = [ADC4_REGISTER, ADC3_REGISTER, ADC2_REGISTER, ADC1_REGISTER, ADC0_REGISTER]
         }
         basic.showLeds(`
@@ -173,7 +173,7 @@ namespace maqueenPlusV2 {
     //% speed1.min=0 speed1.max=255
     //% speed2.min=0 speed2.max=255
     //% weight=99
-    export function controlMotors(edir:MyEnumDir, speed1:number, speed2:number):void{
+    export function controlMotors(edir:MotorDirection, speed1:number, speed2:number):void{
         let allBuffer = pins.createBuffer(5);
         allBuffer[0] = LEFT_MOTOR_REGISTER;
         allBuffer[1] = edir;
@@ -193,16 +193,16 @@ namespace maqueenPlusV2 {
     //% block="start %emotor moving %edir at speed %speed"
     //% speed.min=0 speed.max=255
     //% weight=99
-    export function controlMotor(emotor:MyEnumMotor, edir:MyEnumDir, speed:number):void{
+    export function controlMotor(emotor:WhichMotor, edir:MotorDirection, speed:number):void{
         switch(emotor){
-            case MyEnumMotor.LeftMotor:
+            case WhichMotor.LeftMotor:
                 let leftBuffer = pins.createBuffer(3);
                 leftBuffer[0] = LEFT_MOTOR_REGISTER;
                 leftBuffer[1] = edir;
                 leftBuffer[2] = speed;
                 pins.i2cWriteBuffer(I2CADDR, leftBuffer);
             break;
-            case MyEnumMotor.RightMotor:
+            case WhichMotor.RightMotor:
                 let rightBuffer = pins.createBuffer(3);
                 rightBuffer[0] = RIGHT_MOTOR_REGISTER;
                 rightBuffer[1] = edir;
@@ -210,13 +210,7 @@ namespace maqueenPlusV2 {
                 pins.i2cWriteBuffer(I2CADDR, rightBuffer);
             break;
             default:
-                let allBuffer = pins.createBuffer(5);
-                allBuffer[0] = LEFT_MOTOR_REGISTER;
-                allBuffer[1] = edir;
-                allBuffer[2] = speed;
-                allBuffer[3] = edir;
-                allBuffer[4] = speed;
-                pins.i2cWriteBuffer(I2CADDR, allBuffer)
+                controlMotors(edir, number, number)
             break;   
         }
     }
@@ -228,16 +222,16 @@ namespace maqueenPlusV2 {
 
     //% block="stop %emotor"
     //% weight=98
-    export function controlMotorStop(emotor:MyEnumMotor):void{
+    export function controlMotorStop(emotor:WhichMotor):void{
         switch (emotor) {
-            case MyEnumMotor.LeftMotor:
+            case WhichMotor.LeftMotor:
                 let leftBuffer = pins.createBuffer(3);
                 leftBuffer[0] = LEFT_MOTOR_REGISTER;
                 leftBuffer[1] = 0;
                 leftBuffer[2] = 0;
                 pins.i2cWriteBuffer(I2CADDR, leftBuffer);
                 break;
-            case MyEnumMotor.RightMotor:
+            case WhichMotor.RightMotor:
                 let rightBuffer = pins.createBuffer(3);
                 rightBuffer[0] = RIGHT_MOTOR_REGISTER;
                 rightBuffer[1] = 0;
@@ -264,15 +258,15 @@ namespace maqueenPlusV2 {
 
     //% block="control %eled %eSwitch"
     //% weight=97
-    export function controlLED(eled:MyEnumLed, eSwitch:MyEnumSwitch):void{
+    export function controlLED(eled:WhichLed, eSwitch:SwitchPosition):void{
         switch(eled){
-            case MyEnumLed.LeftLed:
+            case WhichLed.LeftLed:
                 let leftLedControlBuffer = pins.createBuffer(2);
                 leftLedControlBuffer[0] = LEFT_LED_REGISTER;
                 leftLedControlBuffer[1] = eSwitch;
                 pins.i2cWriteBuffer(I2CADDR, leftLedControlBuffer);
             break;
-            case MyEnumLed.RightLed:
+            case WhichLed.RightLed:
                 let rightLedControlBuffer = pins.createBuffer(2);
                 rightLedControlBuffer[0] = RIGHT_LED_REGISTER;
                 rightLedControlBuffer[1] = eSwitch;
@@ -295,21 +289,21 @@ namespace maqueenPlusV2 {
 
     //% block="sensor %eline is on line?"
     //% weight=96
-    export function readLineSensorState(eline:MyEnumLineSensor):boolean {
+    export function readLineSensorState(eline:WhichLineSensor):boolean {
         pins.i2cWriteNumber(I2CADDR, LINE_STATE_REGISTER, NumberFormat.Int8LE);
         let data = pins.i2cReadNumber(I2CADDR, NumberFormat.Int8LE)
         let state;
         switch(eline){
-            case MyEnumLineSensor.SensorL1: 
+            case WhichLineSensor.SensorL1: 
                 state = (data & 0x08) == 0x08 ? 1 : 0; 
             break;
-            case MyEnumLineSensor.SensorM: 
+            case WhichLineSensor.SensorM: 
                 state = (data & 0x04) == 0x04 ? 1 : 0; 
             break;
-            case MyEnumLineSensor.SensorR1: 
+            case WhichLineSensor.SensorR1: 
                 state = (data & 0x02) == 0x02 ? 1 : 0; 
             break;
-            case MyEnumLineSensor.SensorL2: 
+            case WhichLineSensor.SensorL2: 
                 state = (data & 0x10) == 0X10 ? 1 : 0; 
             break;
             default:
@@ -326,7 +320,7 @@ namespace maqueenPlusV2 {
 
     //% block="line sensor %eline analog data"
     //% weight=95
-    export function readLineSensorData(eline:MyEnumLineSensor):number{
+    export function readLineSensorData(eline:WhichLineSensor):number{
         pins.i2cWriteNumber(I2CADDR, ADC_REGISTERS[eline], NumberFormat.Int8LE);
         let buffer = pins.i2cReadBuffer(I2CADDR, 2);
         let data = buffer[1] << 8 | buffer[0]
