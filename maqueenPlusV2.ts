@@ -210,7 +210,7 @@ namespace maqueenPlusV2 {
                 pins.i2cWriteBuffer(I2CADDR, rightBuffer);
             break;
             default:
-                controlMotors(edir, number, number)
+                controlMotors(edir, speed, speed)
             break;   
         }
     }
