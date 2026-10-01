@@ -100,7 +100,7 @@ namespace maqueenPlusV2 {
     }
 
     const I2CADDR = 0x10;
-    // V2.1 vlaues
+    // V2.0 vlaues
     const ADC0_REGISTER = 0X26;
     const ADC1_REGISTER = 0X24;
     const ADC2_REGISTER = 0X22;
@@ -148,7 +148,7 @@ namespace maqueenPlusV2 {
             Version_v = pins.i2cReadNumber(I2CADDR, NumberFormat.Int8LE);
         }
         // The 2.1 version has the addresses reversed. DFRobot will not fix it.
-        if (readVersion().includes("2.0")) {
+        if (readVersion().includes("2.1")) {
             ADC_REGISTERS = [ADC4_REGISTER, ADC3_REGISTER, ADC2_REGISTER, ADC1_REGISTER, ADC0_REGISTER]
         }
         basic.showLeds(`
